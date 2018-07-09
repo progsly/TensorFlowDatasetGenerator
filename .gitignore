@@ -2,5 +2,6 @@
 *.pyc
 .vagrant/
 __pycache__/
+config.py
 ssd_mobilenet_v1_coco_2017_11_17.tar.gz
 ssd_mobilenet_v1_coco_2017_11_17/

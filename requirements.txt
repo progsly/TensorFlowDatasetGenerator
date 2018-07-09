@@ -2,4 +2,6 @@ numpy
 opencv-python
 tensorflow
 requests
-youtube_dl
+Flask>=0.10.1
+python-telegram-bot>=2.5
+gunicorn
