@@ -3,6 +3,7 @@ import telegram
 import config
 import helpers
 import main
+import re
 
 
 # CONFIG
@@ -30,7 +31,17 @@ def webhook():
                         text=helpers.help_text())
         return 'OK'
 
-    bot.sendMessage(chat_id=update.message.chat_id, text='Please send a photo for recognition!')
+    youtube_url = re.search("(?P<url>https?://[^\s]+)", update.message.text).group("url")
+    result, file_url = main.get_video(app, youtube_url)
+    app.logger.info(youtube_url)
+    app.logger.info(result)
+    app.logger.info(file_url)
+
+    file_name = main.download_file(file_url)
+    app.logger.info(file_name)
+
+    main.processing(app, file_name, 'train', 'train', 100, 0.5)
+    bot.sendMessage(chat_id=update.message.chat_id, text='Please send a Youtube URL for dataset generation!')
 
     return 'OK'
 

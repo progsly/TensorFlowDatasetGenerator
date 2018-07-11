@@ -22,3 +22,9 @@ COPY . /app
 WORKDIR /app
 
 RUN pip install -r requirements.txt
+
+EXPOSE 8000
+ENV FLASK_DEBUG=True
+
+#CMD ["python" , "/app/app.py"]
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "wsgi:application", "--reload", "--timeout", "10000"]

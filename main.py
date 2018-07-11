@@ -3,11 +3,48 @@ import sys
 import json
 import cv2
 import time
+from youtube_dl import YoutubeDL
+from youtube_dl.utils import (
+    DownloadError
+)
+import urllib.request
 
 
-def processing(video, object_name, new_object_name, iter_count, threshold):
+def download_file(url):
+    file_name = 'data/tmp/' + str(int(time.time())) + '-video.mp4'
+    urllib.request.urlretrieve(url, file_name)
+    return file_name
 
-    continue_count = 100
+
+def get_video(app, url):
+    ydl_opts = {
+        'format': 'best',
+        'cachedir': False,
+        'skip_download': True,
+        'quiet': True
+    }
+    ydl = YoutubeDL(ydl_opts)
+    try:
+        download_url = ydl.extract_info(url, download=False)
+        app.logger.info('Success')
+
+    except DownloadError as e:
+        app.logger.error('Error {}'.format(e))
+        return False, ''
+    except Exception as e:
+        app.logger.error('Error 2 {}'.format(e))
+        return False, ''
+
+    for item in download_url['formats']:
+        if int(item['format_id']) == 22:
+            return True, item['url']
+
+    return False, ''
+
+
+def processing(app, video, object_name, new_object_name, iter_count, threshold):
+
+    continue_count = 500
     root_dir = 'data/'
 
     if video:
@@ -34,7 +71,7 @@ def processing(video, object_name, new_object_name, iter_count, threshold):
             objects = object_detection_api.get_objects(frame, threshold)
 
             objects = json.loads(objects)
-
+            app.logger.info(objects)
             if len(objects) > 1:
                 for item in objects:
                     if item['name'] != 'Object':
