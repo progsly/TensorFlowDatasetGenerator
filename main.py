@@ -3,6 +3,8 @@ import sys
 import json
 import cv2
 import time
+import zipfile
+import os
 from youtube_dl import YoutubeDL
 from youtube_dl.utils import (
     DownloadError
@@ -42,10 +44,10 @@ def get_video(app, url):
     return False, ''
 
 
-def processing(app, video, object_name, new_object_name, iter_count, threshold):
-
+def processing(app, chat_id, video, object_name, new_object_name, iter_count, threshold):
+    chat_id = str(chat_id)
     continue_count = 500
-    root_dir = 'data/'
+    root_dir = 'data/' + chat_id + '/'
 
     if video:
         sys.path.append('./object_detection')
@@ -96,3 +98,33 @@ def processing(app, video, object_name, new_object_name, iter_count, threshold):
 
             if iteration == iter_count:
                 break
+
+        zip_file = 'data/' + str(int(time.time())) + '_' + chat_id + '.zip'
+        zf = zipfile.ZipFile(zip_file, "w")
+        for dirname, subdirs, files in os.walk(root_dir):
+            if dirname == 'data':
+                continue
+            zf.write(dirname)
+            for filename in files:
+                zf.write(os.path.join(dirname, filename))
+        zf.close()
+
+        deleteFiles = []
+        deleteDirs = []
+        for root, dirs, files in os.walk(root_dir):
+            if root == 'data':
+                continue
+            for f in files:
+                deleteFiles.append(os.path.join(root, f))
+            for d in dirs:
+                deleteDirs.append(os.path.join(root, d))
+        for f in deleteFiles:
+            os.remove(f)
+        for d in deleteDirs:
+            if d == 'data':
+                continue
+            os.rmdir(d)
+
+        return True, zip_file
+    else:
+        return False, ''
